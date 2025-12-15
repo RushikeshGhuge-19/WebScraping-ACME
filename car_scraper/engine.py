@@ -7,42 +7,15 @@ from typing import List, Optional, Tuple, Dict, Any, Type
 from pathlib import Path
 from bs4 import BeautifulSoup
 
-from .templates import (
-    # detail templates
-    DetailJSONLDVehicle,
-    DetailHTMLSpecTable,
-    DetailHybridJSONHTML,
-    DetailInlineHTMLBlocks,
-    # listings
-    ListingCard,
-    ListingImageGrid,
-    ListingSection,
-    # pagination
-    PaginationQueryTemplate,
-    PaginationPathTemplate,
-    # dealer
-    DealerInfoJSONLD,
-)
+from .templates.all_templates import ALL_TEMPLATES, TEMPLATE_BY_NAME
 
 
 class TemplateRegistry:
     """Holds available template classes in detection order."""
 
     def __init__(self):
-        # detection order (canonical): hybrid detail, json-ld detail,
-        # inline detail, html table detail, listings, pagination, dealer
-        self._order = [
-            DetailHybridJSONHTML,
-            DetailJSONLDVehicle,
-            DetailInlineHTMLBlocks,
-            DetailHTMLSpecTable,
-            ListingImageGrid,
-            ListingCard,
-            ListingSection,
-            PaginationQueryTemplate,
-            PaginationPathTemplate,
-            DealerInfoJSONLD,
-        ]
+        # detection order comes from the centralized ALL_TEMPLATES list
+        self._order = list(ALL_TEMPLATES)
 
     def classes(self) -> List[Type]:
         return self._order
@@ -77,24 +50,31 @@ class TemplateDetector:
 
         # hybrid: JSON-LD + specs
         if soup.find('script', type='application/ld+json') and has_specs:
-            return DetailHybridJSONHTML()
+            cls = TEMPLATE_BY_NAME.get('detail_hybrid_json_html')
+            return cls() if cls else None
 
         # json-ld detail
         for script in soup.find_all('script', type='application/ld+json'):
             text = script.string or ''
             if 'Vehicle' in text or 'vehicle' in text.lower():
-                return DetailJSONLDVehicle()
+                cls = TEMPLATE_BY_NAME.get('detail_jsonld_vehicle')
+                return cls() if cls else None
 
         # inline spec blocks (label/value divs or dl/dt/dd)
         if soup.select('.spec-row') or soup.select('.spec') or (soup.select('.label') and soup.select('.value')) or soup.find('dl'):
-            return DetailInlineHTMLBlocks()
+            cls = TEMPLATE_BY_NAME.get('detail_inline_html_blocks')
+            return cls() if cls else None
 
         # spec table
         if soup.find('table'):
-            return DetailHTMLSpecTable()
+            cls = TEMPLATE_BY_NAME.get('detail_html_spec_table')
+            return cls() if cls else None
 
         # listing patterns
-        for cls in (ListingImageGrid, ListingCard, ListingSection):
+        for name in ('listing_image_grid', 'listing_card', 'listing_section'):
+            cls = TEMPLATE_BY_NAME.get(name)
+            if not cls:
+                continue
             tpl = cls()
             try:
                 urls = tpl.get_listing_urls(html, page_url)
@@ -104,7 +84,10 @@ class TemplateDetector:
                 continue
 
         # pagination
-        for cls in (PaginationQueryTemplate, PaginationPathTemplate):
+        for name in ('pagination_query', 'pagination_path'):
+            cls = TEMPLATE_BY_NAME.get(name)
+            if not cls:
+                continue
             tpl = cls()
             try:
                 nxt = tpl.get_next_page(html, page_url)
@@ -114,7 +97,8 @@ class TemplateDetector:
                 continue
 
         # dealer info fallback (site-level)
-        return DealerInfoJSONLD()
+        cls = TEMPLATE_BY_NAME.get('dealer_info_jsonld')
+        return cls() if cls else None
 
 
 class ScraperEngine:

@@ -8,8 +8,8 @@ from pathlib import Path
 from pprint import pprint
 from typing import List
 
-from car_scraper.templates.jsonld_vehicle import JSONLDVehicleTemplate
-from car_scraper.templates.html_spec_table import HTMLSpecTableTemplate
+from car_scraper.templates.detail_jsonld_vehicle import DetailJSONLDVehicle
+from car_scraper.templates.detail_html_spec_table import DetailHTMLSpecTable
 
 
 def find_samples(samples_dir: Path) -> List[Path]:
@@ -20,8 +20,8 @@ def main():
     root = Path(__file__).resolve().parent
     samples_dir = root / 'samples'
     samples = find_samples(samples_dir)
-    jsonld_tpl = JSONLDVehicleTemplate()
-    table_tpl = HTMLSpecTableTemplate()
+    jsonld_tpl = DetailJSONLDVehicle()
+    table_tpl = DetailHTMLSpecTable()
 
     for sample in samples:
         print('---')
