@@ -11,7 +11,6 @@ from car_scraper.templates.section_listing import SectionListingTemplate
 from car_scraper.templates.pagination_query import PaginationQueryTemplate
 from car_scraper.templates.pagination_path import PaginationPathTemplate
 
-
 def test_grid_listing_urls():
     sample = Path(__file__).resolve().parent.parent / 'samples' / 'listing_grid.html'
     html = sample.read_text(encoding='utf-8')

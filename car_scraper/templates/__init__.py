@@ -10,12 +10,15 @@ from .base import CarTemplate
 from .listing_card import ListingCard
 from .listing_image_grid import ListingImageGrid
 from .section_listing import SectionListingTemplate as ListingSection
+from .json_api_listing import ListingJSONAPITemplate
+from .ajax_infinite_listing import ListingAjaxInfiniteTemplate
 
 # Detail (car) templates (emit car rows)
 from .detail_jsonld_vehicle import DetailJSONLDVehicle
 from .detail_html_spec_table import DetailHTMLSpecTable
 from .detail_hybrid_json_html import DetailHybridJSONHTML
 from .detail_inline_html_blocks import DetailInlineHTMLBlocks
+from .detail_image_gallery import DetailImageGallery
 
 # Pagination templates (no rows)
 from .pagination_query import PaginationQueryTemplate
@@ -24,14 +27,20 @@ from .pagination_path import PaginationPathTemplate
 # Dealer info (site-level)
 from .dealer_info_jsonld import DealerInfoJSONLD
 
+# Provide the authoritative template set export
+from .all_templates import ALL_TEMPLATES, TEMPLATE_BY_NAME
+
 __all__ = [
     "CarTemplate",
     # listings
     "ListingCard",
     "ListingImageGrid",
+    "ListingJSONAPITemplate",
+    "ListingAjaxInfiniteTemplate",
     "ListingSection",
     # details
     "DetailJSONLDVehicle",
+    "DetailImageGallery",
     "DetailHTMLSpecTable",
     "DetailHybridJSONHTML",
     "DetailInlineHTMLBlocks",
@@ -40,4 +49,7 @@ __all__ = [
     "PaginationPathTemplate",
     # dealer
     "DealerInfoJSONLD",
+    # aggregator
+    "ALL_TEMPLATES",
+    "TEMPLATE_BY_NAME",
 ]

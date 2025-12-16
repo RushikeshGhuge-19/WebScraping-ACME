@@ -6,7 +6,10 @@ engine so we can import one module to get the full set.
 from .listing_card import ListingCard
 from .listing_image_grid import ListingImageGrid
 from .section_listing import SectionListingTemplate as ListingSection
+from .json_api_listing import ListingJSONAPITemplate
+from .ajax_infinite_listing import ListingAjaxInfiniteTemplate
 
+from .detail_image_gallery import DetailImageGallery
 from .detail_jsonld_vehicle import DetailJSONLDVehicle
 from .detail_html_spec_table import DetailHTMLSpecTable
 from .detail_hybrid_json_html import DetailHybridJSONHTML
@@ -24,8 +27,11 @@ ALL_TEMPLATES = [
     DetailJSONLDVehicle,
     DetailInlineHTMLBlocks,
     DetailHTMLSpecTable,
+    DetailImageGallery,
     ListingImageGrid,
     ListingCard,
+    ListingJSONAPITemplate,
+    ListingAjaxInfiniteTemplate,
     ListingSection,
     PaginationQueryTemplate,
     PaginationPathTemplate,
