@@ -13,7 +13,8 @@
       "next_page": null,
       "parsed": {
         "_source": "json-ld",
-        "_raw": null
+        "_raw": null,
+        "confidence": 0.0
       }
     },
     "detail_inline_html_blocks": {
@@ -103,7 +104,8 @@
       "next_page": null,
       "parsed": {
         "_source": "json-ld",
-        "_raw": null
+        "_raw": null,
+        "confidence": 0.0
       }
     },
     "detail_inline_html_blocks": {
@@ -192,6 +194,8 @@
           "transmission": "Automatic"
         },
         "mileage": "45,000 miles",
+        "mileage_value": 45000,
+        "mileage_unit": "mi",
         "fuel": "Diesel",
         "transmission": "Automatic"
       }
@@ -202,6 +206,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Sample Spec Table",
         "price": null,
         "currency": null,
@@ -316,6 +321,8 @@
           }
         },
         "mileage": "30,000 miles",
+        "mileage_value": 30000,
+        "mileage_unit": "mi",
         "fuel": "Petrol",
         "transmission": "Manual"
       }
@@ -326,7 +333,8 @@
       "parsed": {
         "brand": "SampleBrand",
         "model": "S-Model",
-        "price": "12995",
+        "price": 12995.0,
+        "price_raw": "12995",
         "currency": "GBP",
         "name": "2018 Sample Hybrid",
         "description": null,
@@ -342,7 +350,8 @@
             "priceCurrency": "GBP"
           }
         },
-        "_source": "json-ld"
+        "_source": "json-ld",
+        "confidence": 1.0
       }
     },
     "detail_inline_html_blocks": {
@@ -452,7 +461,8 @@
       "parsed": {
         "brand": "Fiat",
         "model": "500c",
-        "price": "4995",
+        "price": 4995.0,
+        "price_raw": "4995",
         "currency": "GBP",
         "name": "2014 Fiat 500c 1.2 Lounge",
         "description": "Lovely used Fiat 500c in good condition.",
@@ -469,7 +479,8 @@
             "priceCurrency": "GBP"
           }
         },
-        "_source": "json-ld"
+        "_source": "json-ld",
+        "confidence": 1.0
       }
     },
     "detail_inline_html_blocks": {
@@ -561,6 +572,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "2017 Meta Car",
         "price": "7995",
         "currency": "GBP",
@@ -656,6 +668,7 @@
       "parsed": {
         "_source": "microdata-fallback",
         "_raw": null,
+        "confidence": 0.5,
         "name": "2016 Micro Car",
         "brand": "MicroBrand",
         "model": "M1",
@@ -751,6 +764,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Ford EcoSport details | carwow.co.uk",
         "price": null,
         "currency": null,
@@ -775,8 +789,11 @@
           "registration_number": "MT72SVU"
         },
         "mileage": "21,736 miles",
+        "mileage_value": 21736,
+        "mileage_unit": "mi",
         "transmission": "Manual",
-        "fuel": "Petrol"
+        "fuel": "Petrol",
+        "year": 2022
       }
     },
     "detail_html_spec_table": {
@@ -896,7 +913,8 @@
       "next_page": null,
       "parsed": {
         "_source": "json-ld",
-        "_raw": null
+        "_raw": null,
+        "confidence": 0.0
       }
     },
     "detail_inline_html_blocks": {
@@ -986,7 +1004,8 @@
       "next_page": null,
       "parsed": {
         "_source": "json-ld",
-        "_raw": null
+        "_raw": null,
+        "confidence": 0.0
       }
     },
     "detail_inline_html_blocks": {
@@ -1076,7 +1095,8 @@
       "next_page": null,
       "parsed": {
         "_source": "json-ld",
-        "_raw": null
+        "_raw": null,
+        "confidence": 0.0
       }
     },
     "detail_inline_html_blocks": {
@@ -1167,6 +1187,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "New Car Deals | 75 Plates In Stock | Autotrader",
         "price": null,
         "currency": null,
@@ -1277,6 +1298,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Subaru Outback details | carwow.co.uk",
         "price": null,
         "currency": null,
@@ -1302,8 +1324,11 @@
           "previous_owners": "3"
         },
         "mileage": "69,730 miles",
+        "mileage_value": 69730,
+        "mileage_unit": "mi",
         "transmission": "Automatic",
-        "fuel": "Diesel"
+        "fuel": "Diesel",
+        "year": 2017
       }
     },
     "detail_html_spec_table": {
@@ -1427,6 +1452,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Used Cars for Sale | Second Hand Cars",
         "price": null,
         "currency": null,
@@ -1573,6 +1599,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Used cars for sale. Barnoldswick & Lancashire car Dealer | Anyvehicle.co.uk",
         "price": null,
         "currency": null,
@@ -1721,6 +1748,7 @@
       "parsed": {
         "_source": "meta-fallback",
         "_raw": null,
+        "confidence": 0.3,
         "title": "Used Ford Cars For Sale | Autotrader UK",
         "price": null,
         "currency": null,

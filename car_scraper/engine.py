@@ -6,6 +6,7 @@ It detects the most appropriate template for a page and dispatches parsing.
 from typing import List, Optional, Tuple, Dict, Any, Type
 from pathlib import Path
 from bs4 import BeautifulSoup
+from .templates.utils import make_soup, extract_jsonld_objects
 
 from .templates.all_templates import ALL_TEMPLATES, TEMPLATE_BY_NAME
 
@@ -28,19 +29,13 @@ class TemplateDetector:
         self.registry = registry
 
     def detect(self, html: str, page_url: str):
-        soup = BeautifulSoup(html, 'lxml')
+        # Use a single soup instance for all detection checks
+        soup = make_soup(html)
 
-        # Detection order (strict, authoritative):
-        # 1) hybrid detail (json-ld + visible specs),
-        # 2) json-ld detail,
-        # 3) inline spec blocks detail,
-        # 4) html spec table detail,
-        # 5) listing patterns (do NOT emit rows),
-        # 6) pagination (no rows),
-        # 7) dealer info (site-level)
-
+        # quick signals
+        has_table = bool(soup.find('table'))
         has_specs = bool(
-            soup.find('table')
+            has_table
             or soup.select('.spec-row')
             or soup.select('.spec')
             or (soup.select('.label') and soup.select('.value'))
@@ -48,29 +43,42 @@ class TemplateDetector:
             or soup.select('dl')
         )
 
-        # hybrid: JSON-LD + specs
-        if soup.find('script', type='application/ld+json') and has_specs:
-            cls = TEMPLATE_BY_NAME.get('detail_hybrid_json_html')
-            return cls() if cls else None
+        jsonld_objs = extract_jsonld_objects(html)
+        has_jsonld_vehicle = any(isinstance(o, dict) and (('Vehicle' in str(o.get('@type') or '')) or ('vehicle' in str(o.get('@type') or '').lower())) for o in jsonld_objs)
+
+        # scoring across available templates
+        candidates = []
+
+        # Detail templates
+        detail_mapping = {
+            'detail_hybrid_json_html': 0,
+            'detail_jsonld_vehicle': 0,
+            'detail_inline_html_blocks': 0,
+            'detail_html_spec_table': 0,
+        }
+
+        # hybrid: prefer JSON-LD + specs
+        if has_jsonld_vehicle and has_specs:
+            detail_mapping['detail_hybrid_json_html'] += 3
 
         # json-ld detail
-        for script in soup.find_all('script', type='application/ld+json'):
-            text = script.string or ''
-            if 'Vehicle' in text or 'vehicle' in text.lower():
-                cls = TEMPLATE_BY_NAME.get('detail_jsonld_vehicle')
-                return cls() if cls else None
+        if has_jsonld_vehicle:
+            detail_mapping['detail_jsonld_vehicle'] += 2
 
-        # inline spec blocks (label/value divs or dl/dt/dd)
+        # inline spec blocks
         if soup.select('.spec-row') or soup.select('.spec') or (soup.select('.label') and soup.select('.value')) or soup.find('dl'):
-            cls = TEMPLATE_BY_NAME.get('detail_inline_html_blocks')
-            return cls() if cls else None
+            detail_mapping['detail_inline_html_blocks'] += 1
 
         # spec table
-        if soup.find('table'):
-            cls = TEMPLATE_BY_NAME.get('detail_html_spec_table')
-            return cls() if cls else None
+        if has_table:
+            detail_mapping['detail_html_spec_table'] += 1
 
-        # listing patterns
+        for name, base_score in detail_mapping.items():
+            cls = TEMPLATE_BY_NAME.get(name)
+            if cls:
+                candidates.append((cls(), base_score))
+
+        # Listing templates: score by number of discovered listing URLs
         for name in ('listing_image_grid', 'listing_card', 'listing_section'):
             cls = TEMPLATE_BY_NAME.get(name)
             if not cls:
@@ -78,12 +86,12 @@ class TemplateDetector:
             tpl = cls()
             try:
                 urls = tpl.get_listing_urls(html, page_url)
-                if urls:
-                    return tpl
+                score = len(urls)
+                candidates.append((tpl, score))
             except NotImplementedError:
                 continue
 
-        # pagination
+        # Pagination templates: small score if next page found
         for name in ('pagination_query', 'pagination_path'):
             cls = TEMPLATE_BY_NAME.get(name)
             if not cls:
@@ -91,14 +99,41 @@ class TemplateDetector:
             tpl = cls()
             try:
                 nxt = tpl.get_next_page(html, page_url)
-                if nxt:
-                    return tpl
+                score = 1 if nxt else 0
+                candidates.append((tpl, score))
             except NotImplementedError:
                 continue
 
-        # dealer info fallback (site-level)
-        cls = TEMPLATE_BY_NAME.get('dealer_info_jsonld')
-        return cls() if cls else None
+        # Dealer info fallback: modest score when Organization JSON-LD present
+        dealer_cls = TEMPLATE_BY_NAME.get('dealer_info_jsonld')
+        dealer_score = 0
+        # look for Organization type in jsonld objects
+        for o in jsonld_objs:
+            t = o.get('@type') if isinstance(o, dict) else ''
+            if 'Organization' in str(t) or 'AutomotiveBusiness' in str(t):
+                dealer_score = 2
+                break
+        if dealer_cls:
+            candidates.append((dealer_cls(), dealer_score))
+
+        # choose best candidate (highest score). Ties resolved by original ALL_TEMPLATES order
+        if not candidates:
+            return None
+
+        # compute max score
+        max_score = max(score for _, score in candidates)
+        # filter candidates with max_score
+        best = [tpl for tpl, score in candidates if score == max_score]
+        if len(best) == 1:
+            return best[0]
+
+        # tie-breaker: pick first in authoritative order
+        for cls in self.registry.classes():
+            for b in best:
+                if isinstance(b, cls):
+                    return b
+
+        return best[0]
 
 
 class ScraperEngine:

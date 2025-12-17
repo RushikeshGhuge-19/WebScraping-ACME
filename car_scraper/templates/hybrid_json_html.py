@@ -9,6 +9,7 @@ import re
 import html as _html
 from bs4 import BeautifulSoup
 from .base import CarTemplate
+from .utils import parse_mileage, parse_year, normalize_brand
 
 _SCRIPT_RE = re.compile(r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>', re.I | re.S)
 
@@ -68,9 +69,23 @@ class HybridJSONHTMLTemplate(CarTemplate):
                 # common fields: mileage, fuel, transmission
                 if 'mileage' in key and 'mileage' not in out:
                     out['mileage'] = val
+                    # normalized mileage
+                    m_val, m_unit = parse_mileage(val)
+                    if m_val:
+                        out['mileage_value'] = m_val
+                        out['mileage_unit'] = m_unit
                 if 'fuel' in key and 'fuel' not in out:
                     out['fuel'] = val
                 if 'transmission' in key and 'transmission' not in out:
                     out['transmission'] = val
+
+        # normalize brand/year if present in specs
+        if out.get('specs'):
+            if out['specs'].get('brand') and not out.get('brand'):
+                out['brand'] = normalize_brand(out['specs'].get('brand'))
+            if out['specs'].get('year'):
+                y = parse_year(out['specs'].get('year'))
+                if y:
+                    out['year'] = y
 
         return out

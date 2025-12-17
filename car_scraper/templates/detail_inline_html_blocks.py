@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import re
 import html as _html
 from .base import CarTemplate
+from .utils import parse_mileage, parse_year, normalize_brand
 
 
 class DetailInlineHTMLBlocks(CarTemplate):
@@ -67,6 +68,10 @@ class DetailInlineHTMLBlocks(CarTemplate):
                 out['specs'][nk] = val
                 if 'mileage' in key.lower() and 'mileage' not in out:
                     out['mileage'] = val
+                    m_val, m_unit = parse_mileage(val)
+                    if m_val:
+                        out['mileage_value'] = m_val
+                        out['mileage_unit'] = m_unit
                 if 'fuel' in key.lower() and 'fuel' not in out:
                     out['fuel'] = val
                 if 'transmission' in key.lower() and 'transmission' not in out:
@@ -88,6 +93,11 @@ class DetailInlineHTMLBlocks(CarTemplate):
                 key = label.get_text(separator=' ').strip()
                 nk = re.sub(r"[^a-z0-9]+", '_', key.lower()).strip('_')
                 out['specs'][nk] = val
+                if 'mileage' in key.lower() and 'mileage' not in out:
+                    m_val, m_unit = parse_mileage(val)
+                    if m_val:
+                        out['mileage_value'] = m_val
+                        out['mileage_unit'] = m_unit
 
         # .spec-row style: <div class="spec-row"><span class="spec">Label</span><span class="value">Val</span></div>
         for row in soup.select('.spec-row'):
@@ -98,6 +108,11 @@ class DetailInlineHTMLBlocks(CarTemplate):
                 val = valn.get_text(separator=' ').strip()
                 nk = re.sub(r"[^a-z0-9]+", '_', key.lower()).strip('_')
                 out['specs'][nk] = val
+                if 'mileage' in key.lower() and 'mileage' not in out:
+                    m_val, m_unit = parse_mileage(val)
+                    if m_val:
+                        out['mileage_value'] = m_val
+                        out['mileage_unit'] = m_unit
 
         # If we found no inline data, try microdata then meta as fallbacks
         if not out['specs']:
@@ -109,5 +124,14 @@ class DetailInlineHTMLBlocks(CarTemplate):
             if meta and (meta.get('price') or meta.get('title')):
                 out.update(meta)
                 return out
+
+        # normalize brand/year if provided in specs
+        if out.get('specs'):
+            if out['specs'].get('brand') and not out.get('brand'):
+                out['brand'] = normalize_brand(out['specs'].get('brand'))
+            if out['specs'].get('year'):
+                y = parse_year(out['specs'].get('year'))
+                if y:
+                    out['year'] = y
 
         return out

@@ -1,0 +1,3 @@
+sample,name,brand,model,price,currency,mileage_value,year
+car_jsonld.html,2014 Fiat 500c 1.2 Lounge,Fiat,500c,4995,GBP, ,2014
+car_hybrid.html,2018 Sample Hybrid,SampleBrand,S-Model,12995,GBP, ,2018
