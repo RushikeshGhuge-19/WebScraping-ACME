@@ -1,3 +1,8 @@
 beautifulsoup4
 lxml
 pymongo
+
+# HTTP client and browser automation for setup scripts
+requests
+selenium
+webdriver-manager
