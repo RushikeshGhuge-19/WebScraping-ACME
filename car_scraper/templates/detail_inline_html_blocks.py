@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import re
 import html as _html
 from .base import CarTemplate
-from .utils import parse_mileage, parse_year, normalize_brand
+from .utils import parse_mileage, parse_year, normalize_brand, finalize_detail_output
 
 
 class DetailInlineHTMLBlocks(CarTemplate):
@@ -33,7 +33,7 @@ class DetailInlineHTMLBlocks(CarTemplate):
         out['price'] = meta(prop='product:price:amount') or meta(name='price')
         out['currency'] = meta(prop='product:price:currency') or meta(name='currency')
         out['description'] = meta(prop='og:description') or meta(name='description')
-        return out
+        return finalize_detail_output(out)
 
     def _microdata_fallback(self, soup: BeautifulSoup) -> Dict[str, Any]:
         out: Dict[str, Any] = {'_source': 'microdata-fallback'}

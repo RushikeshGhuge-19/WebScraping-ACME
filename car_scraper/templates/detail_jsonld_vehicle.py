@@ -5,7 +5,7 @@ previous `JSONLDVehicleTemplate` implementation to avoid duplication.
 """
 from typing import Dict, Any
 from .jsonld_vehicle import JSONLDVehicleTemplate
-from .utils import extract_microdata, make_soup, extract_meta_values
+from .utils import extract_microdata, make_soup, extract_meta_values, finalize_detail_output
 
 
 class DetailJSONLDVehicle(JSONLDVehicleTemplate):
@@ -26,7 +26,7 @@ class DetailJSONLDVehicle(JSONLDVehicleTemplate):
                         micro['_source'] = 'microdata-fallback'
                         micro['confidence'] = 0.5
                         out.update(micro)
-                        return out
+                        return finalize_detail_output(out)
 
             # meta fallback
             soup = make_soup(html)
@@ -35,6 +35,6 @@ class DetailJSONLDVehicle(JSONLDVehicleTemplate):
                 meta['_source'] = 'meta-fallback'
                 meta['confidence'] = 0.3
                 out.update(meta)
-                return out
+                return finalize_detail_output(out)
 
-        return out
+        return finalize_detail_output(out)

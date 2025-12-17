@@ -235,4 +235,76 @@ def normalize_brand(txt: Optional[str]):
     key = s.lower()
     if key in mapping:
         return mapping[key]
+    # If the input already contains mixed/camel case (e.g. 'SampleBrand'),
+    # preserve it rather than forcing title-case to avoid incorrect lowercasing.
+    if any(c.isupper() for c in s[1:]):
+        return s
     return s.title()
+
+
+def finalize_detail_output(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Ensure a detail template output contains the canonical keys.
+
+    Canonical keys: brand, model, year, price_value, price_raw, currency,
+    mileage_value, mileage_unit, fuel, transmission, description, raw
+
+    This function will not remove existing keys; it will add missing
+    canonical keys (set to None when unavailable) and normalize common
+    aliases (e.g., '_raw' -> 'raw', numeric/string price handling).
+    """
+    out = dict(data or {})
+    # raw field: prefer explicit 'raw', then common underscored variants
+    raw = out.get('raw') or out.get('_raw') or out.get('_raw_jsonld') or out.get('_raw_vehicle') or out.get('specs')
+    out['raw'] = raw if raw is not None else None
+
+    # description
+    out['description'] = out.get('description') or out.get('desc') or None
+
+    # model and brand (brand may be normalized already)
+    out['brand'] = out.get('brand') or None
+    out['model'] = out.get('model') or None
+
+    # year: accept existing numeric or try parse from name/title
+    year = out.get('year')
+    if not year:
+        name = out.get('name') or out.get('title')
+        y = parse_year(name)
+        out['year'] = y
+    else:
+        out['year'] = year
+
+    # price handling: prefer explicit price_value, else try numeric 'price', else parse price_raw
+    price_value = out.get('price_value')
+    price_raw = out.get('price_raw') or out.get('price')
+    if price_value is None:
+        # if existing 'price' is numeric, use it
+        p = out.get('price')
+        if isinstance(p, (int, float)):
+            price_value = float(p)
+        else:
+            # try parsing price_raw as string
+            amt, cur = parse_price(price_raw)
+            price_value = amt
+            if not out.get('currency'):
+                out['currency'] = cur
+    out['price_value'] = price_value if price_value is not None else None
+    out['price_raw'] = price_raw if price_raw is not None else None
+    out['currency'] = out.get('currency') or None
+
+    # mileage: prefer explicit normalized fields, else try parse from 'mileage' or specs
+    m_val = out.get('mileage_value')
+    m_unit = out.get('mileage_unit')
+    if m_val is None:
+        mtxt = out.get('mileage') or (out.get('specs') and out.get('specs').get('mileage')) if isinstance(out.get('specs'), dict) else out.get('mileage')
+        if mtxt:
+            mv, mu = parse_mileage(mtxt)
+            m_val = mv
+            m_unit = mu
+    out['mileage_value'] = m_val if m_val is not None else None
+    out['mileage_unit'] = m_unit if m_unit is not None else None
+
+    # fuel and transmission
+    out['fuel'] = out.get('fuel') or None
+    out['transmission'] = out.get('transmission') or None
+
+    return out
