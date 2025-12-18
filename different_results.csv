@@ -1,9 +1,0 @@
-sample,template,parsed
-car_html_table.html,html_spec_table,"{""_source"": ""html-table"", ""specs"": {""mileage"": ""45,000 miles"", ""engine_size"": ""3.0 L"", ""fuel_type"": ""Diesel"", ""transmission"": ""Automatic""}}"
-car_hybrid.html,jsonld_vehicle,"{""brand"": ""SampleBrand"", ""model"": ""S-Model"", ""price"": ""12995"", ""currency"": ""GBP"", ""name"": ""2018 Sample Hybrid"", ""description"": null, ""_raw"": {""@context"": ""https://schema.org/"", ""@type"": ""Vehicle"", ""name"": ""2018 Sample Hybrid"", ""brand"": ""SampleBrand"", ""model"": ""S-Model"", ""offers"": {""@type"": ""Offer"", ""price"": ""12995"", ""priceCurrency"": ""GBP""}}, ""_source"": ""json-ld""}"
-car_jsonld.html,jsonld_vehicle,"{""brand"": ""Fiat"", ""model"": ""500c"", ""price"": ""4995"", ""currency"": ""GBP"", ""name"": ""2014 Fiat 500c 1.2 Lounge"", ""description"": ""Lovely used Fiat 500c in good condition."", ""_raw"": {""@context"": ""https://schema.org/"", ""@type"": ""Vehicle"", ""name"": ""2014 Fiat 500c 1.2 Lounge"", ""brand"": ""Fiat"", ""model"": ""500c"", ""description"": ""Lovely used Fiat 500c in good condition."", ""offers"": {""@type"": ""Offer"", ""price"": ""4995"", ""priceCurrency"": ""GBP""}}, ""_source"": ""json-ld""}"
-car_meta.html,meta_tags,"{""_source"": ""meta"", ""title"": ""2017 Meta Car"", ""price"": ""7995"", ""currency"": ""GBP"", ""description"": ""Meta-described car.""}"
-car_microdata.html,microdata_vehicle,"{""_source"": ""microdata"", ""name"": ""2016 Micro Car"", ""brand"": ""MicroBrand"", ""model"": ""M1"", ""price"": ""5995""}"
-listing_card.html,card_listing,
-listing_grid.html,grid_listing,
-listing_section.html,section_listing,
