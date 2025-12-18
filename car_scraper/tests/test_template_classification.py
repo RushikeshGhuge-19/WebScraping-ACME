@@ -76,10 +76,8 @@ def test_template_classification_outputs(tpl_cls):
         # listing/pagination templates commonly raise NotImplementedError
         # when parse_car_page is not implemented for their template type
         return
-    except Exception:
-        # Some templates may not be compatible with certain HTML structures
-        # (e.g., detail templates on listing pages). Gracefully skip those.
-        return
+    # NOTE: do not swallow broad exceptions here — unexpected errors should
+    # surface so template bugs or broken mappings are visible in test output.
 
     if name in DETAIL_TEMPLATE_NAMES:
         assert isinstance(out, dict), f"{name} must return a dict"

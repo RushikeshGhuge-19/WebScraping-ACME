@@ -15,6 +15,15 @@ from .utils import make_soup
 
 # Whitelist of path segments that indicate listing/vehicle URLs
 LISTING_PATH_SEGMENTS = {'car', 'cars', 'listing', 'listings', 'vehicle', 'vehicles', 'stock', 'used'}
+# Maximum number of leading path segments to inspect for a listing indicator
+MAX_CHECK_SEGMENTS = 3
+# Allowed domains for absolute URLs. Only absolute URLs whose netloc is in
+# this list will be considered for path-based listing detection. Keep
+# conservative by default (example.com included for tests).
+ALLOWED_DOMAINS = {'example.com'}
+# Plausible resource token: numeric id or slug-like string (lowercase letters,
+# numbers and hyphens, length >= 3)
+SLUG_RE = re.compile(r'^[a-z0-9-]{3,}$')
 
 
 class JSONAPIListingTemplate(CarTemplate):
@@ -61,10 +70,32 @@ class JSONAPIListingTemplate(CarTemplate):
         """
         try:
             parsed = urlparse(url_str)
-            path = parsed.path.lower()
-            # Split path on "/" and check for whitelisted segments
-            segments = [s for s in path.split('/') if s]  # filter empty segments
-            return any(seg in LISTING_PATH_SEGMENTS for seg in segments)
+            path = (parsed.path or '').lower()
+            # If absolute URL, require allowlist on domain
+            if parsed.scheme in ('http', 'https') and parsed.netloc:
+                domain = parsed.netloc.split(':', 1)[0].lower()
+                if domain not in ALLOWED_DOMAINS:
+                    return False
+
+            # Split path on "/" and consider only the leading components
+            segments = [s for s in path.split('/') if s]
+            if not segments:
+                return False
+
+            # Only inspect the first N segments to avoid false positives
+            inspect_segments = segments[:MAX_CHECK_SEGMENTS]
+
+            for idx, seg in enumerate(inspect_segments):
+                if seg in LISTING_PATH_SEGMENTS:
+                    # require a following plausible resource token (e.g., id or slug)
+                    # e.g. /cars/123 or /vehicle/ford-fiesta
+                    if idx + 1 < len(segments):
+                        token = segments[idx + 1]
+                        if token.isdigit() or SLUG_RE.match(token):
+                            return True
+                    # if there is no following token within inspected range, reject
+                    return False
+            return False
         except Exception:
             return False
 

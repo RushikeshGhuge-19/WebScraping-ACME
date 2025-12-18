@@ -35,7 +35,7 @@ __all__ = [
     # listings
     "ListingCard",
     "ListingImageGrid",
-    "ListingJSONAPITemplate",
+    "JSONAPIListingTemplate",
     "ListingAjaxInfiniteTemplate",
     "ListingSection",
     # details

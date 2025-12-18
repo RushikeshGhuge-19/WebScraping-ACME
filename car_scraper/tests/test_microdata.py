@@ -15,3 +15,19 @@ def test_microdata_sample():
     assert out['brand'] is not None
     assert out['model'] == 'M1'
     assert out['_source'] == 'microdata'
+
+
+def test_extract_text_fallback_on_malformed_node():
+    # Simulate a node whose get_text raises an unexpected exception.
+    class BadNode:
+        def get_text(self, strip=True):
+            raise TypeError('simulated parse error')
+
+        def __str__(self):
+            return '<bad-node>'
+
+    from car_scraper.templates.microdata_vehicle import _extract_text
+
+    node = BadNode()
+    # Should not raise; should return str(node).strip() as fallback
+    assert _extract_text(node) == '<bad-node>'

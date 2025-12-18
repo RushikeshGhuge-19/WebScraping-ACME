@@ -6,6 +6,7 @@ registered as a structural template. Structural templates should invoke
 these helpers where appropriate.
 """
 from typing import Dict, Any, Optional
+import logging
 from .base import CarTemplate
 from .utils import make_soup, parse_price, parse_mileage, parse_year, normalize_brand
 
@@ -17,7 +18,13 @@ def _extract_text(node: Optional[Any]) -> Optional[str]:
         return node.get('content')
     try:
         return node.get_text(strip=True)
-    except AttributeError:
+    except Exception as exc:
+        # Log parsing errors for diagnosis but fall back to a safe string
+        try:
+            logging.getLogger(__name__).debug("_extract_text fallback: %s", exc, exc_info=True)
+        except Exception:
+            # Ensure logging failures do not propagate
+            pass
         return str(node).strip()
 
 class MicrodataVehicleTemplate(CarTemplate):
