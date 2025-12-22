@@ -21,7 +21,7 @@ VEHICLE_TYPE_NAMES = {'vehicle', 'car', 'automobile', 'vehiclemodel'}
 def _extract_jsonld_type_names(type_value: Any) -> List[str]:
     """Extract normalized type names from JSON-LD @type field.
     
-    Handles:
+    # Handles:
     - String types and full IRIs (splits on / and # to get local name)
     - Lists of type strings or IRIs
     Returns lowercase local type names.
@@ -228,7 +228,7 @@ class ScraperEngine:
         self.registry = TemplateRegistry()
         self.detector = TemplateDetector(self.registry)
 
-    def scrape_file(self, file_path: Path) -> Dict[str, Any]:
+    def scrape_file(self, file_path: Path, use_renderer: bool = False) -> Dict[str, Any]:
         """Detect template and return structured output dict with explicit
         keys: 'car' for car detail dicts, 'dealer' for dealer info dicts.
 
@@ -236,7 +236,17 @@ class ScraperEngine:
         'listing_urls' for downstream crawlers but those are NOT emitted to
         CSV by the runner.
         """
-        html = file_path.read_text(encoding='utf-8')
+        if use_renderer:
+            try:
+                # Use the optional Selenium renderer to load dynamic pages.
+                from .utils.renderer import render_url
+
+                html = render_url(f'file://{file_path.resolve()}', wait=1.0)
+            except Exception:
+                # Fall back to reading raw file if renderer fails
+                html = file_path.read_text(encoding='utf-8', errors='ignore')
+        else:
+            html = file_path.read_text(encoding='utf-8', errors='ignore')
         tpl = self.detector.detect(html, str(file_path))
         tpl_name = tpl.name if tpl is not None else 'no_template'
         result: Dict[str, Any] = {'sample': file_path.name, 'template': tpl_name}

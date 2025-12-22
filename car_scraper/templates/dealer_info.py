@@ -62,6 +62,15 @@ class DealerInfoTemplate(CarTemplate):
 
         # Fallback: look for common page-level contact selectors
         out = {'name': None, 'telephone': None, 'email': None}
+        # Dragon2000 inline JS fallback: parse var d2k = { dealerDetails: { Email: "..." } }
+        # Only use this if JSON-LD did not provide an email
+        js_match = re.search(r"var\s+d2k\s*=\s*({[\s\S]+?})\s*;", str(soup), re.I)
+        if js_match and not out.get('email'):
+            js_blob = js_match.group(1)
+            # try to find dealerDetails.Email with a tolerant regex
+            m = re.search(r"dealerDetails\s*:\s*{[\s\S]*?Email\s*:\s*['\"]([^'\"]+)['\"]", js_blob, re.I)
+            if m:
+                out['email'] = m.group(1).strip()
         tel = soup.select_one('a[href^="tel:"]')
         if tel:
             out['telephone'] = tel.get_text(strip=True)

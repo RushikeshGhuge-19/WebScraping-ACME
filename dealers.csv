@@ -1,6 +1,1 @@
 site,template,name,telephone,email,address,raw
-"2013 Brown Ford C-Max for sale for £995 in Romford, Essex.html",dealer_info_jsonld,,,,,"{""name"": null, ""telephone"": null, ""email"": null}"
-"2015 Black MINI Hatch for sale for £4,995 in Harrow, Middlesex.html",dealer_info_jsonld,,,,,"{""name"": null, ""telephone"": null, ""email"": null}"
-2017 Meta Car,dealer_info_jsonld,2017 Meta Car,,,,"{""name"": ""2017 Meta Car"", ""telephone"": null, ""email"": null}"
-car_microdata.html,dealer_info_jsonld,,,,,"{""name"": null, ""telephone"": null, ""email"": null}"
-listing_section.html,dealer_info_jsonld,,,,,"{""name"": null, ""telephone"": null, ""email"": null}"

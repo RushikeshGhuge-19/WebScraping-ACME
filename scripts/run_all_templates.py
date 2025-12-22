@@ -1,9 +1,16 @@
 """Run all templates against sample files and generate a CSV report."""
 from pathlib import Path
 import csv
+import argparse
+
+from car_scraper.utils import renderer as _renderer
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--render', action='store_true', help='Use Selenium renderer for each sample (slow)')
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parent.parent
     samples_dir = root / 'car_scraper' / 'samples'
     sample_files = sorted(list(samples_dir.glob('*.html')))
@@ -27,7 +34,11 @@ def main():
 
         for sf in sample_files:
             try:
-                html = sf.read_text(encoding='utf-8', errors='ignore')
+                if args.render:
+                    # Use file:// URL so Chrome can load relative assets if needed
+                    html = _renderer.render_url(f'file://{sf.resolve()}', wait=1.0)
+                else:
+                    html = sf.read_text(encoding='utf-8', errors='ignore')
             except Exception as e:
                 rows.append({
                     'sample': sf.name,

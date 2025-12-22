@@ -18,6 +18,10 @@ class CardListingTemplate(CarTemplate):
             a = card.find('a')
             if a and a.get('href'):
                 urls.append(urljoin(page_url, a['href']))
+        # Dragon2000: stocklist pattern
+        for a in soup.select('div.stocklist-vehicle a.vehicleLink[href]'):
+            if a and a.get('href'):
+                urls.append(urljoin(page_url, a['href']))
         return list(dict.fromkeys(urls))
 
     def get_next_page(self, html: str, page_url: str):

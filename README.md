@@ -59,6 +59,17 @@ The helper `car_scraper/db/mongo_store.py` uses `MONGO_URI`, `MONGO_DB`, and
 - Templates are intentionally conservative and do not execute JavaScript;
   they parse HTML and embedded JSON blocks. For heavy SPA pages you may need
   to add a headless render step or site-specific parsers.
+  
+- Optional rendering: the project includes an optional Selenium-based
+  renderer to execute page JavaScript and obtain the final DOM. To use it:
+
+  1. Ensure `selenium` and `webdriver-manager` are installed (they're listed in `requirements.txt`).
+  2. Run the sample runner with `--render` to have the runner load each
+     sample through a headless Chrome instance (slow, but useful for dynamic pages):
+
+     ```powershell
+     E:\Scrapy\.venv\Scripts\python.exe scripts/run_all_templates.py --render
+     ```
 - Add template classes to `car_scraper/templates/all_templates.py` to include
   them in the canonical detection order.
 

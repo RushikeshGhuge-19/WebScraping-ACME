@@ -47,6 +47,17 @@ class DetailImageGallery(CarTemplate):
                     if src:
                         out.append(urljoin(base, src))
 
+        # Dragon2000 specific selectors: side-thumbs carousel and container links
+        for a in soup.select('div.vehicle-content-slider--side-thumbs__carousel a[href], div.vehicle-content-slider-container a[href]'):
+            href = a.get('href')
+            if href:
+                out.append(urljoin(base, href))
+
+        for img in soup.select('div.vehicle-content-slider--side-thumbs__thumbs-prev img[data-src]'):
+            src = img.get('data-src')
+            if src:
+                out.append(urljoin(base, src))
+
         # fallback: any img with zoom/large hints
         for img in soup.find_all('img'):
             src = img.get('data-large') or img.get('data-src') or img.get('src')

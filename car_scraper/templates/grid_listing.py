@@ -20,6 +20,10 @@ class GridListingTemplate(CarTemplate):
             a = div.find('a')
             if a and a.get('href'):
                 urls.append(urljoin(page_url, a['href']))
+        # Dragon2000 stocklist pattern (sometimes grid pages use stocklist links)
+        for a in soup.select('div.stocklist-vehicle a.vehicleLink[href]'):
+            if a and a.get('href'):
+                urls.append(urljoin(page_url, a['href']))
         # fallback: images with parent links
         for img in soup.find_all('img'):
             parent = img.find_parent('a')
