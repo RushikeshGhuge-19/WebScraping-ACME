@@ -82,13 +82,13 @@ def extract_jsonld_objects(html: Optional[str] = None, soup: Optional[BeautifulS
         # try simple json loads first
         try:
             data = json.loads(_html.unescape(raw))
-        except Exception:
+        except (json.JSONDecodeError, ValueError):
             # try to extract a JSON object from an assignment (window.__STATE__ = {...})
             m = _RE_JSON_ASSIGN.search(raw)
             if m:
                 try:
                     data = json.loads(m.group(1))
-                except Exception:
+                except (json.JSONDecodeError, ValueError):
                     continue
             else:
                 continue
@@ -156,39 +156,10 @@ def parse_price(txt: Optional[str]):
     thousands separators, handles simple currency codes (GBP, USD, EUR).
     Returns (None, None) on failure.
     """
-    if not txt:
-        return None, None
-    s = str(txt).strip()
-    if not s:
-        return None, None
-    
-    # common currency symbols
-    cur = None
-    # detect currency code like GBP, USD
-    m_code = _RE_CURRENCY_CODE.search(s)
-    if m_code:
-        cur = m_code.group(1).upper()
-    # common symbols (early exit for common prefixes)
-    if s and s[0] == '£':
-        cur = cur or 'GBP'
-        s = s.lstrip('£')
-    elif s and s[0] == '$':
-        cur = cur or 'USD'
-        s = s.lstrip('$')
-    elif s and s[0] == '€':
-        cur = cur or 'EUR'
-        s = s.lstrip('€')
+    # Delegate to canonical normalizer to avoid duplication
+    from ..utils.schema_normalizer import parse_price as _schema_parse_price
 
-    # remove currency letters/symbols intermixed
-    s = _RE_PRICE_SYMBOLS.sub('', s)
-    s = _RE_PRICE_CLEAN.sub('', s)
-    if not s:
-        return None, cur
-    try:
-        amt = float(s)
-        return amt, cur
-    except (ValueError, AttributeError):
-        return None, cur
+    return _schema_parse_price(txt)
 
 
 def parse_mileage(txt: Optional[str]):
@@ -197,59 +168,9 @@ def parse_mileage(txt: Optional[str]):
     Examples handled: '12,000 miles', '20k', '30,000 km', '18k km', '12-15k'
     Returns (value_in_miles:int|None, unit:str|None) where unit is 'mi'.
     """
-    if not txt:
-        return None, None
-    s = str(txt).strip().lower()
-    if not s:
-        return None, None
+    from ..utils.schema_normalizer import parse_mileage as _schema_parse_mileage
 
-    # detect unit in text
-    is_km = bool(_RE_KM_UNIT.search(s))
-    # handle ranges like '12-15k' or '12k-15k'
-    m_range = _RE_MILEAGE_RANGE.search(s)
-    if m_range:
-        left = m_range.group(1)
-        right = m_range.group(2)
-        # prefer lower bound; if range uses 'k' on right (e.g. '12-15k'),
-        # interpret both as thousands and apply multiplier to left
-        if 'k' in right.lower() and 'k' not in left.lower():
-            left = left + 'k'
-        s_val = left
-    else:
-        # try to find first numeric token
-        m = _RE_MILEAGE_NUMERIC.search(s)
-        if not m:
-            return None, None
-        s_val = m.group(1)
-        k_marker = m.group(2)
-
-    # handle 'k' shorthand
-    has_k = 'k' in s_val.lower() or (m_range is None and 'k' in s.lower())
-    if has_k:
-        # extract the numeric part and multiply
-        m2 = _RE_MILEAGE_K.search(s_val + 'k')
-        if m2:
-            try:
-                base = float(m2.group(1).replace(',', '')) * 1000
-            except (ValueError, AttributeError):
-                base = None
-        else:
-            base = None
-    else:
-        try:
-            base = float(s_val.replace(',', ''))
-        except (ValueError, AttributeError):
-            base = None
-
-    if base is None:
-        return None, None
-
-    # Convert km to miles when detected
-    value = int(round(base))
-    if is_km:
-        value = int(round(value * 0.621371))
-
-    return value, 'mi'
+    return _schema_parse_mileage(txt)
 
 
 def parse_year(txt: Optional[str]):
@@ -257,53 +178,16 @@ def parse_year(txt: Optional[str]):
 
     Returns int year or None.
     """
-    if not txt:
-        return None
-    s = str(txt).strip()
-    if not s:
-        return None
-    # look for 4-digit year first
-    m = _RE_YEAR.search(s)
-    if m:
-        try:
-            y = int(m.group(1))
-            # sanity check
-            if 1900 <= y <= 2030:
-                return y
-        except (ValueError, AttributeError):
-            pass
+    from ..utils.schema_normalizer import parse_year as _schema_parse_year
 
-    # fallback: 2-digit year -> map to 2000-2099 when <=30 else 1900s
-    m2 = _RE_YEAR_2DIGIT.search(s)
-    if m2:
-        try:
-            yy = int(m2.group(1))
-            if yy <= 30:
-                return 2000 + yy
-            else:
-                return 1900 + yy
-        except (ValueError, AttributeError):
-            return None
-    return None
+    return _schema_parse_year(txt)
 
 
 def normalize_brand(txt: Optional[str]):
     """Simple brand normalizer: title-case and common alias mapping."""
-    if not txt:
-        return None
-    s = str(txt).strip()
-    mapping = {
-        'vw': 'Volkswagen',
-        'mini': 'MINI',
-    }
-    key = s.lower()
-    if key in mapping:
-        return mapping[key]
-    # If the input already contains mixed/camel case (e.g. 'SampleBrand'),
-    # preserve it rather than forcing title-case to avoid incorrect lowercasing.
-    if any(c.isupper() for c in s[1:]):
-        return s
-    return s.title()
+    from ..utils.schema_normalizer import normalize_brand as _schema_normalize_brand
+
+    return _schema_normalize_brand(txt)
 
 
 def finalize_detail_output(data: Dict[str, Any]) -> Dict[str, Any]:

@@ -25,7 +25,7 @@ from .pagination_query import PaginationQueryTemplate
 from .pagination_path import PaginationPathTemplate
 
 # Dealer info (site-level)
-from .dealer_info_jsonld import DealerInfoJSONLD
+from .dealer_info import DealerInfoTemplate as DealerInfoJSONLD
 
 # Provide the authoritative template set export
 from .all_templates import ALL_TEMPLATES, TEMPLATE_BY_NAME
