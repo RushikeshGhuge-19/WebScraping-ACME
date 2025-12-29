@@ -74,6 +74,7 @@ class SchemaNormalizer:
             if 'k' in right.lower() and 'k' not in left.lower():
                 left = left + 'k'
             s_val = left
+            k_marker = None
         else:
             # remove separators for numeric parsing
             cleaned = _MILEAGE_RE.sub('', s)
@@ -84,7 +85,7 @@ class SchemaNormalizer:
             k_marker = m.group(2)
 
         # handle 'k' shorthand
-        has_k = 'k' in s_val.lower() or ('k' in (k_marker or '').lower())
+        has_k = 'k' in s_val.lower() or ('k' in (k_marker or '').lower())        
         try:
             if has_k:
                 num = float(s_val.replace(',', '').replace('k', '')) * 1000
